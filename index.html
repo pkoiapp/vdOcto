@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traducteur de fichier avec JSON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .drop-zone.dragover {
+            background-color: #e0e0e0;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        #new-filename {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .file-info {
+            margin-bottom: 1rem;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Traducteur de fichier avec JSON</h1>
+        <div id="main-drop-zone" class="drop-zone">
+            Glissez et déposez le fichier principal ici ou cliquez pour sélectionner
+        </div>
+        <input type="file" id="main-file-input">
+        <p id="main-file-name" class="file-info"></p>
+
+        <div id="json-drop-zone" class="drop-zone" >
+            Glissez et déposez le fichier JSON de traduction ici ou cliquez pour sélectionner
+        </div>
+        <input type="file" id="json-file-input" accept=".json" >
+        <p id="json-file-name" class="file-info"></p>
+
+        <input type="text" id="new-filename" placeholder="Nouveau nom de fichier" disabled>
+
+        <button id="translate-btn" disabled>Traduire et télécharger</button>
+    </div>
+
+    <script>
+        const mainDropZone = document.getElementById('main-drop-zone');
+        const mainFileInput = document.getElementById('main-file-input');
+        const mainFileName = document.getElementById('main-file-name');
+        const jsonDropZone = document.getElementById('json-drop-zone');
+        const jsonFileInput = document.getElementById('json-file-input');
+        const jsonFileName = document.getElementById('json-file-name');
+        const newFilename = document.getElementById('new-filename');
+        const translateBtn = document.getElementById('translate-btn');
+        const pgTraduction = document.getElementById('pgTraduction');
+
+        let mainFile = null;
+        let jsonFile = null;
+
+        function setupDropZone(dropZone, fileInput, fileNameElement, fileVar) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files, fileNameElement, fileVar);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files, fileNameElement, fileVar);
+            });
+            
+        }
+
+        function handleFiles(files, fileNameElement, fileVar) {
+            if (files.length > 0) {
+                //window[fileVar] = files[0];
+                if (fileVar == 'mainFile') {
+                    mainFile = files[0];
+                }
+                else{
+                    jsonFile = files[0];
+                }
+                
+                fileNameElement.textContent = `Fichier sélectionné : ${files[0].name}`;
+                updateButtonState();
+             
+            }
+        }
+
+        function updateButtonState() {
+            if (mainFile && jsonFile) {
+                newFilename.disabled = false;
+                newFilename.value = mainFile.name + "_FR";
+                translateBtn.disabled = false;
+            } else {
+                newFilename.disabled = true;
+                translateBtn.disabled = true;
+            }
+            console.log(mainFile + " - " + jsonFile)
+
+        }
+
+        setupDropZone(mainDropZone, mainFileInput, mainFileName, 'mainFile');
+        setupDropZone(jsonDropZone, jsonFileInput, jsonFileName, 'jsonFile');
+
+        function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => resolve(event.target.result);
+                reader.onerror = (error) => reject(error);
+                reader.readAsText(file);
+            });
+        }
+
+       function translateContent(content, translations, startKey, endKey) {
+            
+            //console.log(content)
+            for (const [key, value] of Object.entries(translations)) {
+                const regex = key
+    
+                content = content.replace(startKey + regex  + endKey, startKey + value + endKey)
+
+            }
+            
+            return content;
+        }
+
+        function repairContent(content) {
+            const repair = new RegExp('kind:\"Nom\"', 'g');
+            
+            content = content.replace(repair, 'kind:\"Name\"') 
+
+            return content;
+        }
+
+        translateBtn.addEventListener('click', async () => {
+
+            document.body.style.cursor = 'wait';
+
+            if (mainFile && jsonFile && newFilename.value) {
+
+                try {
+
+                    const mainContent = await readFileContent(mainFile);
+                    const jsonContent = await readFileContent(jsonFile);
+                    const translations = JSON.parse(jsonContent);
+                    
+                    var translatedContent = translateContent(mainContent, translations, '\"','\"' );
+                    for (let i = 0; i <= 5; i++) {
+                        translatedContent = translateContent(translatedContent, translations, '\"','\"' );
+                    }
+                        translatedContent = translateContent(translatedContent, translations, '\" ',' \"' );
+                        translatedContent = translateContent(translatedContent, translations, '\"','.\"' );
+                        translatedContent = translateContent(translatedContent, translations, '\" ','.\"' );
+                        translatedContent = translateContent(translatedContent, translations, '\"','. \"' );
+                        translatedContent = translateContent(translatedContent, translations, '\" ','. \"' );
+                        translatedContent = translateContent(translatedContent, translations, '\" ','\"' );
+                        translatedContent = translateContent(translatedContent, translations, '\"',' \"' );
+                    //}
+                    
+                    translatedContent = repairContent(translatedContent);
+
+                    const blob = new Blob([translatedContent], { type: mainFile.type });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = newFilename.value;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('Erreur lors de la traduction:', error);
+                    alert('Une erreur est survenue lors de la traduction du fichier. Veuillez vérifier que le fichier JSON est correctement formaté.');
+                }
+
+                document.body.style.cursor = 'default';
+            }
+        });
+    </script>
+</body>
+</html>
