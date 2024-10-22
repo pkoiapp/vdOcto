@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traducteur de fichier avec JSON</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/siimple-icons/siimple-icons.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,6 +31,8 @@
             margin-bottom: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            align-items: center;
+
         }
         .drop-zone.dragover {
             background-color: #e0e0e0;
@@ -71,13 +74,30 @@
             font-size: 0.9em;
             color: #666;
         }
+        #myProgress {
+            width: 100%;
+            background-color: grey;
+        }
+
+        #myBar {
+            width: 1%;
+            height: 10px;
+            background-color: green;
+        }
+
+        
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Traducteur de fichier avec JSON</h1>
+        <h1>
+            Traducteur Octoplant HUB (Anglais > Français)
+        </h1>
+        <p>Fichier à traduire <i>main.xxxxxxx.js</i> dans le répertoire par défaut:
+        C:\Program Files\AUVESY-MDT\octoplanthub\dist\en</p>
+        
         <div id="main-drop-zone" class="drop-zone">
-            Glissez et déposez le fichier principal ici ou cliquez pour sélectionner
+            Glissez et déposez le fichier à traduire ici ou cliquez pour sélectionner
         </div>
         <input type="file" id="main-file-input">
         <p id="main-file-name" class="file-info"></p>
@@ -89,7 +109,9 @@
         <p id="json-file-name" class="file-info"></p>
 
         <input type="text" id="new-filename" placeholder="Nouveau nom de fichier" disabled>
-
+        <div id="myProgress" style="display:none">
+            <div id="myBar"></div>
+        </div>
         <button id="translate-btn" disabled>Traduire et télécharger</button>
     </div>
 
@@ -103,9 +125,12 @@
         const newFilename = document.getElementById('new-filename');
         const translateBtn = document.getElementById('translate-btn');
         const pgTraduction = document.getElementById('pgTraduction');
-
+        const myProgress = document.getElementById("myProgress");
+        let myBar = document.getElementById("myBar");
+   
         let mainFile = null;
         let jsonFile = null;
+        let progression = 0;
 
         function setupDropZone(dropZone, fileInput, fileNameElement, fileVar) {
             dropZone.addEventListener('click', () => fileInput.click());
@@ -174,14 +199,19 @@
 
        function translateContent(content, translations, startKey, endKey) {
             
-            //console.log(content)
+            if (!myBar.style.width) {
+                myBar.style.width = "0%";
+            }
+            progression = parseInt(myBar.style.width,10) + 7
+            
             for (const [key, value] of Object.entries(translations)) {
                 const regex = key
     
                 content = content.replace(startKey + regex  + endKey, startKey + value + endKey)
 
             }
-            
+            myBar.style.width = progression + "%";
+            console.log(myBar.style.width + " - " + progression)
             return content;
         }
 
@@ -195,7 +225,7 @@
 
         translateBtn.addEventListener('click', async () => {
 
-            document.body.style.cursor = 'wait';
+            myProgress.style.display = "block"
 
             if (mainFile && jsonFile && newFilename.value) {
 
@@ -206,9 +236,11 @@
                     const translations = JSON.parse(jsonContent);
                     
                     var translatedContent = translateContent(mainContent, translations, '\"','\"' );
+           
                     for (let i = 0; i <= 5; i++) {
                         translatedContent = translateContent(translatedContent, translations, '\"','\"' );
                     }
+               
                         translatedContent = translateContent(translatedContent, translations, '\" ',' \"' );
                         translatedContent = translateContent(translatedContent, translations, '\"','.\"' );
                         translatedContent = translateContent(translatedContent, translations, '\" ','.\"' );
@@ -216,6 +248,7 @@
                         translatedContent = translateContent(translatedContent, translations, '\" ','. \"' );
                         translatedContent = translateContent(translatedContent, translations, '\" ','\"' );
                         translatedContent = translateContent(translatedContent, translations, '\"',' \"' );
+                   
                     //}
                     
                     translatedContent = repairContent(translatedContent);
@@ -234,9 +267,11 @@
                     alert('Une erreur est survenue lors de la traduction du fichier. Veuillez vérifier que le fichier JSON est correctement formaté.');
                 }
 
-                document.body.style.cursor = 'default';
+                myProgress.style.display = "none"
             }
         });
+
+        
     </script>
 </body>
 </html>
