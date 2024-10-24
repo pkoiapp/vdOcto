@@ -181,7 +181,7 @@
                 newFilename.disabled = true;
                 translateBtn.disabled = true;
             }
-            console.log(mainFile + " - " + jsonFile)
+            //console.log(mainFile + " - " + jsonFile)
 
         }
 
@@ -299,7 +299,10 @@
                     alert('Une erreur est survenue lors de la traduction du fichier. Veuillez vérifier que le fichier JSON est correctement formaté.');
                 }
 
-                //myProgress.style.display = "none"
+                myProgress.style.display = "none"
+
+                mainFile = null
+                jsonFile = null
             }
         });
 
