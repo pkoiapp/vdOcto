@@ -202,16 +202,32 @@
             if (!myBar.style.width) {
                 myBar.style.width = "0%";
             }
-            progression = parseInt(myBar.style.width,10) + 7
+            
             
             for (const [key, value] of Object.entries(translations)) {
-                const regex = key
-    
-                content = content.replace(startKey + regex  + endKey, startKey + value + endKey)
+                //const regex = key
+                //content = content.replace(startKey + regex  + endKey, startKey + value + endKey)
 
+                //phrase trop longues, coupées en 2
+                const phrase1 = "Are you considering implementing octoplant";
+                const phrase2 = "Our system integrators will give you straightforward advice";
+                const phrase3 = "When we talk about change management";
+                const phrase4 = "Helping you implement a long-term planned";
+                const phrase5 = "Based on these recommendations";
+
+                if (key.includes(phrase1) || key.includes(phrase2) || key.includes(phrase3) || key.includes(phrase4) || key.includes(phrase5)){
+
+                    content = content.replace(key, value)
+
+                }else{
+
+                    const regex = new RegExp(`${startKey}${key}${endKey}`, 'g'); // Utilisation de RegExp pour le remplacement
+                    content = content.replace(regex, `${startKey}${value}${endKey}`);
+
+                }
+                
             }
-            myBar.style.width = progression + "%";
-            console.log(myBar.style.width + " - " + progression)
+
             return content;
         }
 
@@ -219,6 +235,14 @@
             const repair = new RegExp('kind:\"Nom\"', 'g');
             
             content = content.replace(repair, 'kind:\"Name\"') 
+
+            return content;
+        }
+
+        function repairContent1(content) {
+            const repair1 = RegExp('NAME:\"Nom\",', 'g');
+
+            content = content.replace(repair1, 'NAME:\"Name\",') 
 
             return content;
         }
@@ -236,22 +260,30 @@
                     const translations = JSON.parse(jsonContent);
                     
                     var translatedContent = translateContent(mainContent, translations, '\"','\"' );
+                    updateProgress(6)
            
-                    for (let i = 0; i <= 5; i++) {
-                        translatedContent = translateContent(translatedContent, translations, '\"','\"' );
-                    }
-               
+                    /*for (let i = 0; i <= 6; i++) {
+                        translatedContent = await translateContent(translatedContent, translations, '\"','\"' );
+                    }*/
+                    updateProgress(42);
+            
+                    //for (let i = 0; i <= 2; i++) {             
                         translatedContent = translateContent(translatedContent, translations, '\" ',' \"' );
                         translatedContent = translateContent(translatedContent, translations, '\"','.\"' );
                         translatedContent = translateContent(translatedContent, translations, '\" ','.\"' );
+                    //}
+                    updateProgress(87)
+            
                         translatedContent = translateContent(translatedContent, translations, '\"','. \"' );
                         translatedContent = translateContent(translatedContent, translations, '\" ','. \"' );
                         translatedContent = translateContent(translatedContent, translations, '\" ','\"' );
                         translatedContent = translateContent(translatedContent, translations, '\"',' \"' );
-                   
+                    
                     //}
+                    updateProgress(99);
                     
                     translatedContent = repairContent(translatedContent);
+                    translatedContent = repairContent1(translatedContent);
 
                     const blob = new Blob([translatedContent], { type: mainFile.type });
                     const url = URL.createObjectURL(blob);
@@ -267,10 +299,17 @@
                     alert('Une erreur est survenue lors de la traduction du fichier. Veuillez vérifier que le fichier JSON est correctement formaté.');
                 }
 
-                myProgress.style.display = "none"
+                //myProgress.style.display = "none"
             }
         });
 
+        function updateProgress(percent) {
+
+            document.getElementById("myBar").style.width = percent + '%';
+            console.log(document.getElementById("myBar").style.width)
+            // Pour forcer le rendu, vous pouvez ajouter un petit délai
+            //setTimeout(() => {}, 1000);
+        }   
         
     </script>
 </body>
