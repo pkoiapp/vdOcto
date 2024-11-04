@@ -211,11 +211,19 @@
                 //phrase trop longues, coupées en 2
                 const phrase1 = "Are you considering implementing octoplant";
                 const phrase2 = "Our system integrators will give you straightforward advice";
-                const phrase3 = "When we talk about change management";
+                const phrase3_1 = "When we talk about change management";
+                const phrase3_2 = "and created by";
+                const phrase3_3 = "digitalization. Quick fixes are of limited value";
                 const phrase4 = "Helping you implement a long-term planned";
                 const phrase5 = "Based on these recommendations";
 
-                if (key.includes(phrase1) || key.includes(phrase2) || key.includes(phrase3) || key.includes(phrase4) || key.includes(phrase5)){
+                if (key.includes(phrase1) 
+                    || key.includes(phrase2) 
+                    || key.includes(phrase3_1) 
+                    || key.includes(phrase3_2) 
+                    || key.includes(phrase3_3) 
+                    || key.includes(phrase4) 
+                    || key.includes(phrase5)){
 
                     content = content.replace(key, value)
 
@@ -296,7 +304,7 @@
                     URL.revokeObjectURL(url);
                 } catch (error) {
                     console.error('Erreur lors de la traduction:', error);
-                    alert('Une erreur est survenue lors de la traduction du fichier. Veuillez vérifier que le fichier JSON est correctement formaté.');
+                    alert('Une erreur est survenue lors de la traduction du fichier. Veuillez vérifier que le fichier JSON soit correctement formaté.');
                 }
 
                 myProgress.style.display = "none"
