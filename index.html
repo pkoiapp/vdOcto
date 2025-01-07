@@ -14,8 +14,12 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-content:stretch ;
+            gap:30px;
         }
-        .container {
+        .container, .information {
             background-color: white;
             padding: 2rem;
             border-radius: 8px;
@@ -23,7 +27,12 @@
             text-align: center;
             max-width: 500px;
             width: 100%;
+            
         }
+        .information{
+            flex-grow: 5;
+        }
+
         .drop-zone {
             border: 2px dashed #ccc;
             border-radius: 8px;
@@ -85,6 +94,10 @@
             background-color: green;
         }
 
+        i{
+            color:forestgreen;
+        }
+
         
     </style>
 </head>
@@ -94,7 +107,7 @@
             Traducteur Octoplant HUB (Anglais > Français)
         </h1>
         <p>Fichier à traduire <i>main.xxxxxxx.js</i> dans le répertoire par défaut:
-        C:\Program Files\AUVESY-MDT\octoplanthub\dist\en</p>
+        <b>C:\Program Files\AUVESY-MDT\octoplanthub\dist\en</b></p>
         
         <div id="main-drop-zone" class="drop-zone">
             Glissez et déposez le fichier à traduire ici ou cliquez pour sélectionner
@@ -113,6 +126,13 @@
             <div id="myBar"></div>
         </div>
         <button id="translate-btn" disabled>Traduire et télécharger</button>
+    </div>
+    <div class="information">
+        <p><b>Information (<i>SI</i> problème d'affichage des caractères spéciaux é, è, à, â, ç...):</b></p>
+        <p>Ouvrir le fichier convertit par l'application avec notepad++</p>
+        <p>- aller dans le menu <i>"Encoding&rarr;Character set&rarr;Western europe&rarr;Windows-1252"</i></p>
+        <p>- Sélectionner <i>"Convertir en UTF-8"</i></p>
+        <p>- Enregistrer</p>
     </div>
 
     <script>
